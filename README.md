@@ -3,6 +3,15 @@ work-absense-forecaster
 
 A work absense hours ML project
 
+Setup
+
+```
+python -m venv env
+pip install -r requirements.txt
+source env/bin/activate  # On Windows: env\Scripts\activate
+```
+
+
 Project Organization
 ------------
 
