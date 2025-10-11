@@ -7,8 +7,8 @@ Setup
 
 ```
 python -m venv env
-pip install -r requirements.txt
 source env/bin/activate  # On Windows: env\Scripts\activate
+pip install -r requirements.txt
 ```
 
 
