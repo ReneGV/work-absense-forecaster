@@ -12,13 +12,17 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from src.models.preprocessors import DropColumnsTransformer, IQRClippingTransformer, ToStringTransformer
-
+import mlflow
 
 # ============================
-# Carga de datos y preprocesamiento  
+# Configurar MLflow
+# ============================
+mlflow.set_experiment("absenteeism_forecasting")  # nombre del experimento
+
+# ============================
+# Carga de datos y preprocesamiento
 # ============================
 df = pd.read_csv('data/raw/work_absenteeism_original.csv')
-
 target_column = 'absenteeism_time_in_hours'
 df.columns = df.columns.str.lower().str.replace("[ ]", "_", regex=True)
 
@@ -35,11 +39,8 @@ categorical_columns = [
 
 X = df.drop(target_column, axis=1)
 y = df[target_column]
-
 median_absentism_value = y.median()
-print(f"Median of clipped training target: {median_absentism_value}")
 y = (y > median_absentism_value).astype(int)
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # ============================
@@ -63,7 +64,7 @@ preprocess_pipeline = Pipeline([
 ])
 
 # ============================
-# Entrenamiento de modelo y evaluación
+# Modelos
 # ============================
 models = {
     'Logistic Regression': LogisticRegression(random_state=42),
@@ -75,34 +76,51 @@ models = {
 best_model = None
 best_accuracy = 0
 
+# ============================
+# Entrenamiento con MLflow
+# ============================
 for model_name, model in models.items():
-    full_pipeline = Pipeline([
-        ('preprocess', preprocess_pipeline),
-        ('regressor', model)
-    ])
+    with mlflow.start_run(run_name=model_name):
+        full_pipeline = Pipeline([
+            ('preprocess', preprocess_pipeline),
+            ('regressor', model)
+        ])
 
-    full_pipeline.fit(X_train, y_train)
-    y_pred = full_pipeline.predict(X_test)
+        # Log parámetros del modelo
+        mlflow.log_param("model_name", model_name)
+        mlflow.log_params(model.get_params())
 
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"\nResults for {model_name}:")
-    print(f"Accuracy: {accuracy:.2f}")
-    print("Classification Report:")
-    print(classification_report(y_test, y_pred))
+        # Entrenamiento
+        full_pipeline.fit(X_train, y_train)
+        y_pred = full_pipeline.predict(X_test)
 
-    cm = confusion_matrix(y_test, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Low', 'High'])
-    disp.plot(cmap='Blues')
-    plt.title(f'{model_name}: Confusion Matrix')
-    plt.tight_layout()
-    plt.show()
+        # Métricas
+        accuracy = accuracy_score(y_test, y_pred)
+        mlflow.log_metric("accuracy", accuracy)
 
-    if accuracy > best_accuracy:
-        best_accuracy = accuracy
-        best_model = full_pipeline
+        print(f"\nResults for {model_name}:")
+        print(f"Accuracy: {accuracy:.2f}")
+        print("Classification Report:")
+        print(classification_report(y_test, y_pred))
+
+        # Matriz de confusión
+        cm = confusion_matrix(y_test, y_pred)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Low', 'High'])
+        disp.plot(cmap='Blues')
+        plt.title(f'{model_name}: Confusion Matrix')
+        plt.tight_layout()
+        plt.savefig("confusion_matrix.png")
+        plt.close()
+        mlflow.log_artifact("confusion_matrix.png")
+
+        # Guardar el mejor modelo
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_model = full_pipeline
+            mlflow.sklearn.log_model(best_model, artifact_path="best_model")
 
 # ============================
-# Guardamos el mejor modelo
+# Guardar el mejor modelo localmente
 # ============================
 joblib.dump(best_model, 'best_absenteeism_model.pkl')
-print(f"\n✅ Best model saved with accuracy: {best_accuracy:.2f}")
+print(f"\n Best model saved with accuracy: {best_accuracy:.2f}")

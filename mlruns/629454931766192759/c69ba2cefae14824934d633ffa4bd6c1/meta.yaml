@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/patri/OneDrive/Documents/maestria/MLops/work-absense-forecaster/mlruns/629454931766192759/c69ba2cefae14824934d633ffa4bd6c1/artifacts
+end_time: 1762109931191
+entry_point_name: ''
+experiment_id: '629454931766192759'
+lifecycle_stage: active
+run_id: c69ba2cefae14824934d633ffa4bd6c1
+run_name: Random Forest Classifier
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762109930748
+status: 3
+tags: []
+user_id: patri

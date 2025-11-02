@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/patri/OneDrive/Documents/maestria/MLops/work-absense-forecaster/mlruns/629454931766192759/d2c33c0390e947eb801d4521642bfd09/artifacts
+end_time: 1762109931668
+entry_point_name: ''
+experiment_id: '629454931766192759'
+lifecycle_stage: active
+run_id: d2c33c0390e947eb801d4521642bfd09
+run_name: Neural Network
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762109931207
+status: 3
+tags: []
+user_id: patri
