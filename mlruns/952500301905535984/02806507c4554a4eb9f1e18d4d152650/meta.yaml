@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/patri/OneDrive/Documents/maestria/MLops/work-absense-forecaster/mlruns/952500301905535984/02806507c4554a4eb9f1e18d4d152650/artifacts
+end_time: 1762106270389
+entry_point_name: ''
+experiment_id: '952500301905535984'
+lifecycle_stage: active
+run_id: 02806507c4554a4eb9f1e18d4d152650
+run_name: calm-newt-532
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762106269865
+status: 3
+tags: []
+user_id: patri
