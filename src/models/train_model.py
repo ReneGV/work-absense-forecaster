@@ -14,10 +14,17 @@ from sklearn.neural_network import MLPClassifier
 from src.models.preprocessors import DropColumnsTransformer, IQRClippingTransformer, ToStringTransformer
 import mlflow
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+
 # ============================
 # Configurar MLflow
 # ============================
-mlflow.set_experiment("absenteeism_forecasting")  # nombre del experimento
+mlflow.set_experiment("absenteeism_forecasting_best_model")  # nombre del experimento
 
 # ============================
 # Carga de datos y preprocesamiento
@@ -56,7 +63,7 @@ preprocess_pipeline = Pipeline([
             ]), numerical_columns),
             ('categorical', Pipeline([
                 ('to_string', ToStringTransformer()),
-                ('one_hot', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
+                ('one_hot', OneHotEncoder(sparse=False, handle_unknown='ignore'))
             ]), categorical_columns)
         ],
         remainder='passthrough'

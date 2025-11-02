@@ -11,6 +11,11 @@ source env/bin/activate  # On Windows: env\Scripts\activate
 pip install -r requirements.txt
 ```
 
+Run MLFlow server
+```
+mlflow server  --backend-store-uri sqlite:///my.db   --default-artifact-root ./mlruns   --host 0.0.0.0 --port 5000
+```
+
 
 Project Organization
 ------------
