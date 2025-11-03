@@ -1,0 +1,6 @@
+artifact_location: mlflow-artifacts:/221377005907680211
+creation_time: 1762144335719
+experiment_id: '221377005907680211'
+last_update_time: 1762144335719
+lifecycle_stage: active
+name: absenteeism_forecasting_best_model

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/221377005907680211/018c0a3a188d4d9eb906b65ad5d2a283/artifacts
+end_time: 1762144753440
+entry_point_name: ''
+experiment_id: '221377005907680211'
+lifecycle_stage: active
+run_id: 018c0a3a188d4d9eb906b65ad5d2a283
+run_name: Random Forest Classifier
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762144752335
+status: 3
+tags: []
+user_id: patri

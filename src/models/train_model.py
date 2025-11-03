@@ -63,7 +63,7 @@ preprocess_pipeline = Pipeline([
             ]), numerical_columns),
             ('categorical', Pipeline([
                 ('to_string', ToStringTransformer()),
-                ('one_hot', OneHotEncoder(sparse=False, handle_unknown='ignore'))
+                ('one_hot', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
             ]), categorical_columns)
         ],
         remainder='passthrough'
@@ -129,5 +129,5 @@ for model_name, model in models.items():
 # ============================
 # Guardar el mejor modelo localmente
 # ============================
-joblib.dump(best_model, 'best_absenteeism_model.pkl')
+joblib.dump(best_model, 'src/models/best_absenteeism_model.pkl')
 print(f"\n Best model saved with accuracy: {best_accuracy:.2f}")

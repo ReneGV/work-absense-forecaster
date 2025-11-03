@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/patri/OneDrive/Documents/maestria/MLops/work-absense-forecaster/mlruns/193247259598538478/b4b887ffd1984725aedb703809e77f21/artifacts
+end_time: 1762144923208
+entry_point_name: ''
+experiment_id: '193247259598538478'
+lifecycle_stage: active
+run_id: b4b887ffd1984725aedb703809e77f21
+run_name: beautiful-donkey-712
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762144923030
+status: 4
+tags: []
+user_id: patri

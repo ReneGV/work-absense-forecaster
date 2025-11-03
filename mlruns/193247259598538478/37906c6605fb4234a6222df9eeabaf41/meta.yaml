@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/patri/OneDrive/Documents/maestria/MLops/work-absense-forecaster/mlruns/193247259598538478/37906c6605fb4234a6222df9eeabaf41/artifacts
+end_time: 1762143971260
+entry_point_name: ''
+experiment_id: '193247259598538478'
+lifecycle_stage: active
+run_id: 37906c6605fb4234a6222df9eeabaf41
+run_name: indecisive-boar-937
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762143971099
+status: 4
+tags: []
+user_id: patri

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/221377005907680211/5b132c9f48ff45ecabb32363a291f8f8/artifacts
+end_time: 1762145035764
+entry_point_name: ''
+experiment_id: '221377005907680211'
+lifecycle_stage: active
+run_id: 5b132c9f48ff45ecabb32363a291f8f8
+run_name: Neural Network
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762145034640
+status: 3
+tags: []
+user_id: patri

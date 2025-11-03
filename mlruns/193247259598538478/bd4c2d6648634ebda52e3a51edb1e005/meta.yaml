@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/patri/OneDrive/Documents/maestria/MLops/work-absense-forecaster/mlruns/193247259598538478/bd4c2d6648634ebda52e3a51edb1e005/artifacts
+end_time: 1762144824196
+entry_point_name: ''
+experiment_id: '193247259598538478'
+lifecycle_stage: active
+run_id: bd4c2d6648634ebda52e3a51edb1e005
+run_name: fearless-calf-612
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762144824020
+status: 4
+tags: []
+user_id: patri
