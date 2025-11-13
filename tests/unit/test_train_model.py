@@ -1,283 +1,333 @@
 """
-Tests for training model functionality in src/models/train_model.py
+Unit tests for train_model module.
+
+These tests demonstrate how the refactored code can be easily tested
+with mocked dependencies and controlled test data.
 """
+
 import pytest
 import pandas as pd
 import numpy as np
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+import joblib
+from unittest.mock import Mock, patch, MagicMock
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.neural_network import MLPClassifier
-from src.models.preprocessors import (
-    DropColumnsTransformer,
-    IQRClippingTransformer,
-    ToStringTransformer
+from sklearn.pipeline import Pipeline
+import tempfile
+import os
+
+from src.models.train_model import (
+    load_and_prepare_data,
+    create_preprocessing_pipeline,
+    get_default_models,
+    train_and_evaluate_model,
+    train_models,
+    save_model
 )
+from src.models.evaluation import create_confusion_matrix
 
 
-class TestPipelineConstruction:
-    """Tests for pipeline construction used in train_model.py"""
-
-    def test_preprocess_pipeline_creation(self, columns_to_drop, numerical_columns, categorical_columns):
-        """Test that preprocessing pipeline can be created"""
-        preprocess_pipeline = Pipeline([
-            ('drop_columns', DropColumnsTransformer(columns_to_drop)),
-            ('preprocess', ColumnTransformer(
-                transformers=[
-                    ('numerical', Pipeline([
-                        ('iqr_clipping', IQRClippingTransformer()),
-                        ('scaling', StandardScaler())
-                    ]), numerical_columns),
-                    ('categorical', Pipeline([
-                        ('to_string', ToStringTransformer()),
-                        ('one_hot', OneHotEncoder(sparse=False, handle_unknown='ignore'))
-                    ]), categorical_columns)
-                ],
-                remainder='passthrough'
-            ))
-        ])
-        
-        assert preprocess_pipeline is not None
-        assert len(preprocess_pipeline.steps) == 2
-
-    def test_full_pipeline_with_model(self, sample_dataframe, columns_to_drop, 
-                                     numerical_columns, categorical_columns):
-        """Test that full pipeline with model can be created and fitted"""
-        # Create preprocessing pipeline
-        preprocess_pipeline = Pipeline([
-            ('drop_columns', DropColumnsTransformer(columns_to_drop)),
-            ('preprocess', ColumnTransformer(
-                transformers=[
-                    ('numerical', Pipeline([
-                        ('iqr_clipping', IQRClippingTransformer()),
-                        ('scaling', StandardScaler())
-                    ]), numerical_columns),
-                    ('categorical', Pipeline([
-                        ('to_string', ToStringTransformer()),
-                        ('one_hot', OneHotEncoder(sparse=False, handle_unknown='ignore'))
-                    ]), categorical_columns)
-                ],
-                remainder='passthrough'
-            ))
-        ])
-        
-        # Create full pipeline with model
-        full_pipeline = Pipeline([
-            ('preprocess', preprocess_pipeline),
-            ('regressor', LogisticRegression(random_state=42, max_iter=1000))
-        ])
-        
-        # Prepare data
-        X = sample_dataframe.drop('absenteeism_time_in_hours', axis=1)
-        y = sample_dataframe['absenteeism_time_in_hours']
-        y = (y > y.median()).astype(int)
-        
-        # Fit pipeline
-        full_pipeline.fit(X, y)
-        
-        # Make predictions
-        predictions = full_pipeline.predict(X)
-        
-        assert predictions is not None
-        assert len(predictions) == len(y)
-        assert all(pred in [0, 1] for pred in predictions)
-
-
-class TestModelCreation:
-    """Tests for model instantiation"""
-
-    def test_logistic_regression_creation(self):
-        """Test Logistic Regression model creation"""
-        model = LogisticRegression(random_state=42)
-        assert model is not None
-        assert model.random_state == 42
-
-    def test_random_forest_creation(self):
-        """Test Random Forest model creation"""
-        model = RandomForestClassifier(random_state=42, n_estimators=100)
-        assert model is not None
-        assert model.random_state == 42
-        assert model.n_estimators == 100
-
-    def test_neural_network_creation(self):
-        """Test Neural Network model creation"""
-        model = MLPClassifier(
-            hidden_layer_sizes=(100, 50),
-            activation='relu',
-            solver='adam',
-            alpha=0.01,
-            max_iter=1000,
-            random_state=42,
-            early_stopping=True
+class TestLoadAndPrepareData:
+    """Test data loading and preparation."""
+    
+    def test_load_and_prepare_data_returns_correct_shapes(self, sample_csv_file):
+        """Test that data is split correctly."""
+        X_train, X_test, y_train, y_test, median = load_and_prepare_data(
+            sample_csv_file,
+            test_size=0.2,
+            random_state=42
         )
-        assert model is not None
-        assert model.random_state == 42
-        assert model.hidden_layer_sizes == (100, 50)
-        assert model.early_stopping == True
-
-
-class TestDataPreparation:
-    """Tests for data preparation steps"""
-
-    def test_column_name_normalization(self, sample_dataframe):
-        """Test that column names are normalized correctly"""
-        df = sample_dataframe.copy()
-        df.columns = df.columns.str.lower().str.replace("[ ]", "_", regex=True)
         
-        # Check that all columns are lowercase and have no spaces
-        for col in df.columns:
+        # Check shapes
+        assert len(X_train) + len(X_test) == 100  # Total samples
+        assert len(y_train) == len(X_train)
+        assert len(y_test) == len(X_test)
+        
+        # Check test size ratio
+        assert len(X_test) == 20
+        assert len(X_train) == 80
+    
+    def test_load_and_prepare_data_converts_to_binary(self, sample_csv_file):
+        """Test that target is converted to binary based on median."""
+        X_train, X_test, y_train, y_test, median = load_and_prepare_data(
+            sample_csv_file,
+            random_state=42
+        )
+        
+        # Check that y contains only 0 and 1
+        assert set(y_train.unique()).issubset({0, 1})
+        assert set(y_test.unique()).issubset({0, 1})
+        
+        # Check median is returned
+        assert isinstance(median, (int, float))
+        assert median > 0
+    
+    def test_load_and_prepare_data_normalizes_column_names(self, sample_csv_file):
+        """Test that column names are normalized."""
+        X_train, X_test, y_train, y_test, median = load_and_prepare_data(
+            sample_csv_file,
+            random_state=42
+        )
+        
+        # Check that column names are lowercase with underscores
+        for col in X_train.columns:
             assert col == col.lower()
             assert ' ' not in col
-
-    def test_binary_target_creation(self, sample_dataframe):
-        """Test that binary target is created correctly"""
-        y = sample_dataframe['absenteeism_time_in_hours']
-        median_value = y.median()
-        y_binary = (y > median_value).astype(int)
-        
-        # Check that target is binary
-        assert set(y_binary.unique()).issubset({0, 1})
-        
-        # Check that roughly half are 0 and half are 1
-        assert 0 < y_binary.sum() < len(y_binary)
-
-    def test_train_test_split_compatibility(self, sample_dataframe):
-        """Test that data can be split for training and testing"""
-        from sklearn.model_selection import train_test_split
-        
-        X = sample_dataframe.drop('absenteeism_time_in_hours', axis=1)
-        y = sample_dataframe['absenteeism_time_in_hours']
-        y = (y > y.median()).astype(int)
-        
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
+    
+    def test_load_and_prepare_data_with_different_test_size(self, sample_csv_file):
+        """Test with different test size."""
+        X_train, X_test, y_train, y_test, median = load_and_prepare_data(
+            sample_csv_file,
+            test_size=0.3,
+            random_state=42
         )
         
-        # Check splits are correct
-        assert len(X_train) == len(y_train)
-        assert len(X_test) == len(y_test)
-        assert len(X_train) + len(X_test) == len(X)
+        assert len(X_test) == 30
+        assert len(X_train) == 70
 
 
-class TestModelTraining:
-    """Tests for model training process"""
-
-    def test_logistic_regression_training(self, sample_dataframe, columns_to_drop,
-                                         numerical_columns, categorical_columns):
-        """Test that Logistic Regression can be trained"""
-        # Prepare pipeline
-        preprocess_pipeline = Pipeline([
-            ('drop_columns', DropColumnsTransformer(columns_to_drop)),
-            ('preprocess', ColumnTransformer(
-                transformers=[
-                    ('numerical', Pipeline([
-                        ('iqr_clipping', IQRClippingTransformer()),
-                        ('scaling', StandardScaler())
-                    ]), numerical_columns),
-                    ('categorical', Pipeline([
-                        ('to_string', ToStringTransformer()),
-                        ('one_hot', OneHotEncoder(sparse=False, handle_unknown='ignore'))
-                    ]), categorical_columns)
-                ],
-                remainder='passthrough'
-            ))
-        ])
+class TestCreatePreprocessingPipeline:
+    """Test preprocessing pipeline creation."""
+    
+    def test_create_preprocessing_pipeline_returns_pipeline(self):
+        """Test that function returns a Pipeline object."""
+        columns_to_drop = ['id']
+        numerical_columns = ['age', 'weight']
+        categorical_columns = ['social_drinker']
         
-        full_pipeline = Pipeline([
-            ('preprocess', preprocess_pipeline),
-            ('regressor', LogisticRegression(random_state=42, max_iter=1000))
-        ])
+        pipeline = create_preprocessing_pipeline(
+            columns_to_drop,
+            numerical_columns,
+            categorical_columns
+        )
         
-        # Prepare data
-        X = sample_dataframe.drop('absenteeism_time_in_hours', axis=1)
-        y = sample_dataframe['absenteeism_time_in_hours']
-        y = (y > y.median()).astype(int)
+        assert isinstance(pipeline, Pipeline)
+        assert 'drop_columns' in pipeline.named_steps
+        assert 'preprocess' in pipeline.named_steps
+    
+    def test_create_preprocessing_pipeline_with_empty_columns(self):
+        """Test pipeline creation with empty column lists."""
+        pipeline = create_preprocessing_pipeline(
+            columns_to_drop=[],
+            numerical_columns=[],
+            categorical_columns=[]
+        )
         
-        # Train
-        full_pipeline.fit(X, y)
-        
-        # Check model is fitted
-        assert hasattr(full_pipeline.named_steps['regressor'], 'coef_')
-
-    def test_model_prediction_output_format(self, sample_dataframe, columns_to_drop,
-                                           numerical_columns, categorical_columns):
-        """Test that model predictions have correct format"""
-        # Quick pipeline
-        preprocess_pipeline = Pipeline([
-            ('drop_columns', DropColumnsTransformer(columns_to_drop)),
-            ('preprocess', ColumnTransformer(
-                transformers=[
-                    ('numerical', Pipeline([
-                        ('iqr_clipping', IQRClippingTransformer()),
-                        ('scaling', StandardScaler())
-                    ]), numerical_columns),
-                    ('categorical', Pipeline([
-                        ('to_string', ToStringTransformer()),
-                        ('one_hot', OneHotEncoder(sparse=False, handle_unknown='ignore'))
-                    ]), categorical_columns)
-                ],
-                remainder='passthrough'
-            ))
-        ])
-        
-        full_pipeline = Pipeline([
-            ('preprocess', preprocess_pipeline),
-            ('regressor', LogisticRegression(random_state=42, max_iter=1000))
-        ])
-        
-        X = sample_dataframe.drop('absenteeism_time_in_hours', axis=1)
-        y = sample_dataframe['absenteeism_time_in_hours']
-        y = (y > y.median()).astype(int)
-        
-        full_pipeline.fit(X, y)
-        predictions = full_pipeline.predict(X)
-        
-        # Check predictions format
-        assert isinstance(predictions, np.ndarray)
-        assert len(predictions) == len(X)
-        assert all(pred in [0, 1] for pred in predictions)
+        assert isinstance(pipeline, Pipeline)
 
 
-class TestMetricsCalculation:
-    """Tests for metrics calculation"""
+class TestGetDefaultModels:
+    """Test default model getter."""
+    
+    def test_get_default_models_returns_dict(self):
+        """Test that function returns a dictionary."""
+        models = get_default_models()
+        
+        assert isinstance(models, dict)
+        assert len(models) == 3
+    
+    def test_get_default_models_contains_expected_models(self):
+        """Test that all expected models are present."""
+        models = get_default_models()
+        
+        assert 'Logistic Regression' in models
+        assert 'Random Forest Classifier' in models
+        assert 'Neural Network' in models
+    
+    def test_get_default_models_all_have_random_state(self):
+        """Test that all models have random_state set."""
+        models = get_default_models(random_state=123)
+        
+        for model_name, model in models.items():
+            params = model.get_params()
+            assert 'random_state' in params
+            assert params['random_state'] == 123
 
-    def test_accuracy_score_calculation(self):
-        """Test accuracy score calculation"""
-        from sklearn.metrics import accuracy_score
+class TestTrainAndEvaluateModel:
+    """Test model training and evaluation."""
+    
+    def test_train_and_evaluate_model_without_mlflow(self, sample_train_data):
+        """Test training without MLflow."""
+        X_train, X_test, y_train, y_test, preprocess_pipeline = sample_train_data
         
-        y_true = np.array([0, 1, 1, 0, 1])
-        y_pred = np.array([0, 1, 0, 0, 1])
+        model = LogisticRegression(random_state=42, max_iter=1000)
         
-        accuracy = accuracy_score(y_true, y_pred)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cm_path = os.path.join(tmpdir, "cm.png")
+            
+            pipeline, accuracy, report = train_and_evaluate_model(
+                model=model,
+                model_name="Test Model",
+                preprocess_pipeline=preprocess_pipeline,
+                X_train=X_train,
+                X_test=X_test,
+                y_train=y_train,
+                y_test=y_test,
+                use_mlflow=False,
+                confusion_matrix_path=cm_path
+            )
         
+        assert isinstance(pipeline, Pipeline)
+        assert isinstance(accuracy, float)
         assert 0 <= accuracy <= 1
-        assert accuracy == 0.8  # 4 out of 5 correct
-
-    def test_confusion_matrix_creation(self):
-        """Test confusion matrix creation"""
-        from sklearn.metrics import confusion_matrix
-        
-        y_true = np.array([0, 1, 1, 0, 1])
-        y_pred = np.array([0, 1, 0, 0, 1])
-        
-        cm = confusion_matrix(y_true, y_pred)
-        
-        assert cm.shape == (2, 2)
-        assert cm.sum() == len(y_true)
-
-    def test_classification_report_creation(self):
-        """Test classification report creation"""
-        from sklearn.metrics import classification_report
-        
-        y_true = np.array([0, 1, 1, 0, 1])
-        y_pred = np.array([0, 1, 0, 0, 1])
-        
-        report = classification_report(y_true, y_pred)
-        
-        assert report is not None
         assert isinstance(report, str)
-        assert 'precision' in report
-        assert 'recall' in report
+    
+    @patch('src.models.train_model.mlflow')
+    def test_train_and_evaluate_model_with_mlflow(self, mock_mlflow, sample_train_data):
+        """Test training with MLflow logging."""
+        X_train, X_test, y_train, y_test, preprocess_pipeline = sample_train_data
+        
+        model = LogisticRegression(random_state=42, max_iter=1000)
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cm_path = os.path.join(tmpdir, "cm.png")
+            
+            pipeline, accuracy, report = train_and_evaluate_model(
+                model=model,
+                model_name="Test Model",
+                preprocess_pipeline=preprocess_pipeline,
+                X_train=X_train,
+                X_test=X_test,
+                y_train=y_train,
+                y_test=y_test,
+                use_mlflow=True,
+                confusion_matrix_path=cm_path
+            )
+        
+        # Verify MLflow was called
+        mock_mlflow.log_param.assert_called()
+        mock_mlflow.log_params.assert_called()
+        mock_mlflow.log_metric.assert_called()
+        mock_mlflow.log_artifact.assert_called()
+    
+    def test_train_and_evaluate_model_returns_valid_pipeline(self, sample_train_data):
+        """Test that returned pipeline can make predictions."""
+        X_train, X_test, y_train, y_test, preprocess_pipeline = sample_train_data
+        
+        model = LogisticRegression(random_state=42, max_iter=1000)
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cm_path = os.path.join(tmpdir, "cm.png")
+            
+            pipeline, accuracy, report = train_and_evaluate_model(
+                model=model,
+                model_name="Test Model",
+                preprocess_pipeline=preprocess_pipeline,
+                X_train=X_train,
+                X_test=X_test,
+                y_train=y_train,
+                y_test=y_test,
+                use_mlflow=False,
+                confusion_matrix_path=cm_path
+            )
+        
+        # Test that pipeline can make predictions
+        predictions = pipeline.predict(X_test)
+        assert len(predictions) == len(y_test)
+        assert set(predictions).issubset({0, 1})
+
+
+class TestTrainModels:
+    """Test training multiple models."""
+    
+    def test_train_models_without_mlflow(self, sample_train_data):
+        """Test training multiple models without MLflow."""
+        X_train, X_test, y_train, y_test, preprocess_pipeline = sample_train_data
+        
+        models = {
+            'Logistic Regression': LogisticRegression(random_state=42, max_iter=1000),
+            'Random Forest': RandomForestClassifier(random_state=42, n_estimators=10)
+        }
+        
+        best_model, best_accuracy, best_model_name = train_models(
+            models=models,
+            preprocess_pipeline=preprocess_pipeline,
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+            y_test=y_test,
+            use_mlflow=False
+        )
+        
+        assert isinstance(best_model, Pipeline)
+        assert isinstance(best_accuracy, float)
+        assert 0 <= best_accuracy <= 1
+        assert best_model_name in models.keys()
+    
+    @patch('src.models.train_model.mlflow')
+    def test_train_models_with_mlflow(self, mock_mlflow, sample_train_data):
+        """Test training multiple models with MLflow."""
+        X_train, X_test, y_train, y_test, preprocess_pipeline = sample_train_data
+        
+        # Mock MLflow start_run to return a context manager
+        mock_mlflow.start_run.return_value.__enter__ = Mock()
+        mock_mlflow.start_run.return_value.__exit__ = Mock()
+        
+        models = {
+            'Logistic Regression': LogisticRegression(random_state=42, max_iter=1000)
+        }
+        
+        best_model, best_accuracy, best_model_name = train_models(
+            models=models,
+            preprocess_pipeline=preprocess_pipeline,
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+            y_test=y_test,
+            use_mlflow=True,
+            experiment_name="test_experiment"
+        )
+        
+        # Verify MLflow was configured
+        mock_mlflow.set_experiment.assert_called_once_with("test_experiment")
+    
+    def test_train_models_returns_best_model(self, sample_train_data):
+        """Test that the function returns the model with highest accuracy."""
+        X_train, X_test, y_train, y_test, preprocess_pipeline = sample_train_data
+        
+        models = {
+            'Model1': LogisticRegression(random_state=42, max_iter=1000),
+            'Model2': LogisticRegression(random_state=43, max_iter=1000)
+        }
+        
+        best_model, best_accuracy, best_model_name = train_models(
+            models=models,
+            preprocess_pipeline=preprocess_pipeline,
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+            y_test=y_test,
+            use_mlflow=False
+        )
+        
+        assert best_model_name in models.keys()
+
+
+class TestSaveModel:
+    """Test model saving."""
+    
+    def test_save_model_creates_file(self):
+        """Test that model file is created."""
+        model = Pipeline([
+            ('regressor', LogisticRegression())
+        ])
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = os.path.join(tmpdir, "test_model.pkl")
+            save_model(model, output_path)
+            
+            assert os.path.exists(output_path)
+    
+    def test_save_model_can_be_loaded(self):
+        """Test that saved model can be loaded."""
+        model = Pipeline([
+            ('regressor', LogisticRegression())
+        ])
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = os.path.join(tmpdir, "test_model.pkl")
+            save_model(model, output_path)
+            
+            loaded_model = joblib.load(output_path)
+            assert isinstance(loaded_model, Pipeline)
 

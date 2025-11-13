@@ -10,7 +10,7 @@ services:
       - ./src:/app/src:ro
       - ./tests:/app/tests:ro
       - ./pytest.ini:/app/pytest.ini:ro
-    command: pytest tests/ -v --tb=short
+    command: pytest tests/ -v
     
   test-coverage:
     build:

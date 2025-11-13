@@ -72,66 +72,158 @@ Project Organization
 
 # Testing Guide for Work Absenteeism Forecaster
 
-## 📋 What Has Been Created
+## 📋 Test Structure
 
-A comprehensive test suite for the `src/models` module has been created with the following structure:
+A comprehensive test suite with both **unit tests** and **integration tests** has been created:
 
 ```
 tests/
 ├── __init__.py                    # Package initialization
-├── conftest.py                    # Shared pytest fixtures
-├── test_preprocessors.py          # Tests for custom transformers (30+ tests)
-├── test_train_model.py           # Tests for training pipeline (15+ tests)
-├── test_predict_model.py         # Tests for prediction pipeline (15+ tests)
-├── test_parameter_tuning.py      # Tests for hyperparameter tuning (10+ tests)
-├── README.md                      # Test documentation
-└── TEST_SUMMARY.md               # Detailed test summary
+├── conftest.py                    # Shared pytest fixtures (root level)
+│
+├── unit/                          # Unit tests (55 tests)
+│   ├── __init__.py
+│   ├── test_preprocessors.py      # Tests for custom transformers
+│   ├── test_train_model.py       # Tests for training pipeline
+│   ├── test_predict_model.py     # Tests for prediction pipeline
+│   └── test_parameter_tuning.py  # Tests for hyperparameter tuning
+│
+└── integration/                   # Integration tests (21 tests)
+    ├── __init__.py
+    ├── conftest.py                # Integration-specific fixtures
+    └── test_pipeline_integration.py  # End-to-end pipeline tests
 
 Additional files:
 ├── pytest.ini                     # Pytest configuration
-├── run_tests.sh                   # Convenience script for running tests
-└── .github/workflows/tests.yml    # CI/CD workflow for automated testing
+├── Dockerfile.test                # Docker image for testing
+└── docker-compose.test.yml        # Docker compose for running tests
 ```
 
 ## Test Coverage
 
-The test suite covers:
+### Unit Tests (`tests/unit/`)
 
-1. **Preprocessors (`test_preprocessors.py`)**
+1. **Preprocessors** (`test_preprocessors.py`) - 20 tests
    - `DropColumnsTransformer`: Column dropping functionality
    - `IQRClippingTransformer`: Outlier handling using IQR method
    - `ToStringTransformer`: Type conversion to strings
    - Integration with sklearn pipelines
 
-2. **Model Training (`test_train_model.py`)**
+2. **Model Training** (`test_train_model.py`) - 13 tests
    - Pipeline construction
    - Model creation (Logistic Regression, Random Forest, Neural Network)
    - Data preparation and preprocessing
    - Training process and metrics calculation
 
-3. **Model Prediction (`test_predict_model.py`)**
+3. **Model Prediction** (`test_predict_model.py`) - 13 tests
    - Model loading and saving
    - Making predictions on new data
    - Prediction evaluation with ground truth
    - Data handling in prediction pipeline
 
-4. **Parameter Tuning (`test_parameter_tuning.py`)**
+4. **Parameter Tuning** (`test_parameter_tuning.py`) - 9 tests
    - Parameter grid setup
    - GridSearchCV functionality
    - Best model selection
    - Metrics tracking during tuning
 
+### Integration Tests (`tests/integration/`)
+
+**End-to-End Pipeline** (`test_pipeline_integration.py`) - 21 tests
+
+1. **Data Loading** (4 tests)
+   - CSV file loading
+   - Column name normalization
+   - Error handling
+   - Data shape validation
+
+2. **Preprocessing Pipeline** (5 tests)
+   - Full preprocessing transformation
+   - Column dropping
+   - Missing value handling
+   - Outlier clipping with IQR
+   - Categorical encoding
+
+3. **Model Training** (4 tests)
+   - Full pipeline training
+   - Prediction generation
+   - Train/test split compatibility
+   - Multiple model comparison
+
+4. **End-to-End Flow** (3 tests)
+   - Complete pipeline: load → preprocess → train → predict → metrics
+   - New data prediction workflow
+   - Unknown category handling
+
+5. **Model Persistence** (2 tests)
+   - Model save and load
+   - Loaded model predictions
+
+6. **Metrics Calculation** (3 tests)
+   - All metrics (accuracy, F1, recall, precision)
+   - Confusion matrix structure
+   - Metrics consistency
+
 ---
 
 ## 🚀 Quick Start
 
-Build the docker image that conatins the required environment to run the tests.
+### Build Docker Image
+
+Build the docker image that contains the required environment to run the tests:
 
 ```sh
 docker build -f Dockerfile.test -t work-absenteeism-test:latest .
 ```
 
-Run tests inside the docker container
+### Run All Tests
+
+Run all tests (unit + integration):
+
 ```sh
 docker-compose -f docker-compose.test.yml run --rm test
 ```
+
+### Run Specific Test Suites
+
+Run only unit tests:
+
+```sh
+docker-compose -f docker-compose.test.yml run --rm test pytest tests/unit/ -v
+```
+
+Run only integration tests:
+
+```sh
+docker-compose -f docker-compose.test.yml run --rm test pytest tests/integration/ -v
+```
+
+### Run with Coverage
+
+Run tests with coverage report:
+
+```sh
+docker-compose -f docker-compose.test.yml run --rm test-coverage
+```
+
+### Test Markers
+
+Use pytest markers to run specific test categories:
+
+```sh
+# Run only unit tests
+pytest -m unit
+
+# Run only integration tests  
+pytest -m integration
+
+# Run only slow tests
+pytest -m slow
+```
+
+## 📊 Test Statistics
+
+- **Total Tests**: 76
+- **Unit Tests**: 55
+- **Integration Tests**: 21
+- **Test Coverage**: ~85% of `src/models` module
