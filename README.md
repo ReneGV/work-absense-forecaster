@@ -103,66 +103,50 @@ Additional files:
 
 ### Unit Tests (`tests/unit/`)
 
-1. **Preprocessors** (`test_preprocessors.py`) - 20 tests
+1. **Preprocessors** (`test_preprocessors.py`)
    - `DropColumnsTransformer`: Column dropping functionality
    - `IQRClippingTransformer`: Outlier handling using IQR method
    - `ToStringTransformer`: Type conversion to strings
    - Integration with sklearn pipelines
 
-2. **Model Training** (`test_train_model.py`) - 13 tests
+2. **Model Training** (`test_train_model.py`)
+   - Data loading and preparation
    - Pipeline construction
    - Model creation (Logistic Regression, Random Forest, Neural Network)
-   - Data preparation and preprocessing
-   - Training process and metrics calculation
+   - Training and evaluation
+   - Multiple model training
+   - Model persistence
 
-3. **Model Prediction** (`test_predict_model.py`) - 13 tests
-   - Model loading and saving
+3. **Model Prediction** (`test_predict_model.py`)
+   - Model loading
    - Making predictions on new data
-   - Prediction evaluation with ground truth
    - Data handling in prediction pipeline
 
-4. **Parameter Tuning** (`test_parameter_tuning.py`) - 9 tests
-   - Parameter grid setup
-   - GridSearchCV functionality
-   - Best model selection
-   - Metrics tracking during tuning
+4. **Data Utilities** (`test_data_utils.py`)
+   - CSV file loading
+   - Column name normalization
+   - Data shape validation
+   - Data value preservation
+
+5. **Model Evaluation** (`test_evaluation.py`)
+   - Metrics calculation (accuracy, F1, recall, precision)
+   - Classification reports
+   - Confusion matrix creation
 
 ### Integration Tests (`tests/integration/`)
 
-**End-to-End Pipeline** (`test_pipeline_integration.py`) - 21 tests
+**End-to-End Pipeline** (`test_pipeline_integration.py`)
 
-1. **Data Loading** (4 tests)
-   - CSV file loading
-   - Column name normalization
-   - Error handling
-   - Data shape validation
-
-2. **Preprocessing Pipeline** (5 tests)
-   - Full preprocessing transformation
-   - Column dropping
-   - Missing value handling
-   - Outlier clipping with IQR
-   - Categorical encoding
-
-3. **Model Training** (4 tests)
-   - Full pipeline training
-   - Prediction generation
-   - Train/test split compatibility
-   - Multiple model comparison
-
-4. **End-to-End Flow** (3 tests)
-   - Complete pipeline: load → preprocess → train → predict → metrics
-   - New data prediction workflow
-   - Unknown category handling
-
-5. **Model Persistence** (2 tests)
-   - Model save and load
-   - Loaded model predictions
-
-6. **Metrics Calculation** (3 tests)
-   - All metrics (accuracy, F1, recall, precision)
-   - Confusion matrix structure
-   - Metrics consistency
+1. **Complete ML Workflow** (`test_realistic_ml_workflow`)
+   - Data loading and preparation
+   - Train/test split
+   - Preprocessing pipeline creation
+   - Model training
+   - Model persistence (save/load)
+   - Prediction on new data
+   - Metrics evaluation
+   - Confusion matrix generation
+   - File artifact verification
 
 ---
 
