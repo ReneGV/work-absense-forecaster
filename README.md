@@ -1,6 +1,8 @@
 work-absense-forecaster
 ==============================
 
+![Tests](https://github.com/YOUR-USERNAME/work-absense-forecaster/actions/workflows/tests.yml/badge.svg)
+
 A work absense hours ML project
 
 Setup
@@ -81,14 +83,16 @@ tests/
 ├── __init__.py                    # Package initialization
 ├── conftest.py                    # Shared pytest fixtures (root level)
 │
-├── unit/                          # Unit tests (55 tests)
+├── unit/                          # Unit tests
 │   ├── __init__.py
-│   ├── test_preprocessors.py      # Tests for custom transformers
+│   ├── conftest.py               # Unit-specific fixtures
+│   ├── test_preprocessors.py     # Tests for custom transformers
 │   ├── test_train_model.py       # Tests for training pipeline
 │   ├── test_predict_model.py     # Tests for prediction pipeline
-│   └── test_parameter_tuning.py  # Tests for hyperparameter tuning
+│   ├── test_data_utils.py        # Tests for data utilities
+│   └── test_evaluation.py        # Tests for model evaluation
 │
-└── integration/                   # Integration tests (21 tests)
+└── integration/                   # Integration tests
     ├── __init__.py
     ├── conftest.py                # Integration-specific fixtures
     └── test_pipeline_integration.py  # End-to-end pipeline tests
@@ -150,6 +154,32 @@ Additional files:
 
 ---
 
+## 🔄 Continuous Integration
+
+This project uses GitHub Actions to automatically run tests on every push and pull request.
+
+### Workflow Overview
+
+The CI pipeline runs:
+- **Unit tests** on all test files in `tests/unit/`
+- **Integration tests** on all test files in `tests/integration/`
+- **Coverage reports** with XML and HTML output
+- Tests on Python 3.9
+
+### Viewing Test Results
+
+1. Navigate to the **Actions** tab in the GitHub repository
+2. Click on any workflow run to see detailed test results
+3. Coverage reports are uploaded as artifacts (available for 30 days)
+
+### Workflow Configuration
+
+The workflow is defined in `.github/workflows/tests.yml` and triggers on:
+- Pushes to `main` and `develop` branches
+- Pull requests to `main` and `develop` branches
+
+---
+
 ## 🚀 Quick Start
 
 ### Build Docker Image
@@ -204,10 +234,3 @@ pytest -m integration
 # Run only slow tests
 pytest -m slow
 ```
-
-## 📊 Test Statistics
-
-- **Total Tests**: 76
-- **Unit Tests**: 55
-- **Integration Tests**: 21
-- **Test Coverage**: ~85% of `src/models` module
