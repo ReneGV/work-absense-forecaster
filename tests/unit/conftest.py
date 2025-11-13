@@ -10,6 +10,7 @@ import os
 from sklearn.pipeline import Pipeline
 
 from src.models.train_model import create_preprocessing_pipeline
+from src.data.constants import NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS
 
 
 @pytest.fixture
@@ -99,20 +100,11 @@ def sample_train_data():
     
     # Create preprocessing pipeline
     columns_to_drop = ['id', 'body_mass_index']
-    numerical_columns = [
-        'transportation_expense', 'distance_from_residence_to_work', 'service_time',
-        'age', 'work_load_average/day', 'hit_target', 'son', 'pet', 'weight',
-        'height', 'education'
-    ]
-    categorical_columns = [
-        'disciplinary_failure', 'social_drinker', 'social_smoker',
-        'month_of_absence', 'day_of_the_week', 'seasons', 'reason_for_absence'
-    ]
     
     preprocess_pipeline = create_preprocessing_pipeline(
         columns_to_drop,
-        numerical_columns,
-        categorical_columns
+        NUMERICAL_COLUMNS,
+        CATEGORICAL_COLUMNS
     )
     
     return X_train, X_test, y_train, y_test, preprocess_pipeline

@@ -5,6 +5,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from sklearn.pipeline import Pipeline
+from src.data.constants import NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS
 
 
 @pytest.fixture
@@ -66,18 +67,11 @@ def columns_to_drop():
 @pytest.fixture
 def numerical_columns():
     """List of numerical columns"""
-    return [
-        'transportation_expense', 'distance_from_residence_to_work', 'service_time',
-        'age', 'work_load_average/day', 'hit_target', 'son', 'pet', 'weight',
-        'height', 'education'
-    ]
+    return NUMERICAL_COLUMNS
 
 
 @pytest.fixture
 def categorical_columns():
     """List of categorical columns"""
-    return [
-        'disciplinary_failure', 'social_drinker', 'social_smoker',
-        'month_of_absence', 'day_of_the_week', 'seasons', 'reason_for_absence'
-    ]
+    return CATEGORICAL_COLUMNS
 

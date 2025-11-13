@@ -22,6 +22,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from src.models.preprocessors import DropColumnsTransformer, IQRClippingTransformer, ToStringTransformer
 from src.models.evaluation import evaluate_predictions, get_classification_report, create_confusion_matrix
+from src.data.constants import NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS
 import mlflow
 
 from dotenv import load_dotenv
@@ -277,15 +278,6 @@ def main():
     
     # Define column configurations
     columns_to_drop = ['id', 'body_mass_index']
-    numerical_columns = [
-        'transportation_expense', 'distance_from_residence_to_work', 'service_time',
-        'age', 'work_load_average/day', 'hit_target', 'son', 'pet', 'weight',
-        'height', 'education'
-    ]
-    categorical_columns = [
-        'disciplinary_failure', 'social_drinker', 'social_smoker',
-        'month_of_absence', 'day_of_the_week', 'seasons', 'reason_for_absence'
-    ]
     
     # Load and prepare data
     X_train, X_test, y_train, y_test, median_value = load_and_prepare_data(
@@ -295,8 +287,8 @@ def main():
     # Create preprocessing pipeline
     preprocess_pipeline = create_preprocessing_pipeline(
         columns_to_drop,
-        numerical_columns,
-        categorical_columns
+        NUMERICAL_COLUMNS,
+        CATEGORICAL_COLUMNS
     )
     
     # Get models to train

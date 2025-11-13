@@ -15,6 +15,7 @@ from src.models.train_model import (
     load_and_prepare_data
 )
 from src.models.train_model import save_model
+from src.data.constants import NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS
 
 
 @pytest.fixture
@@ -102,20 +103,11 @@ def trained_model(sample_data_file):
     
     # Create preprocessing pipeline
     columns_to_drop = ['id', 'body_mass_index']
-    numerical_columns = [
-        'transportation_expense', 'distance_from_residence_to_work',
-        'service_time', 'age', 'work_load_average/day', 'hit_target',
-        'son', 'pet', 'weight', 'height', 'education'
-    ]
-    categorical_columns = [
-        'disciplinary_failure', 'social_drinker', 'social_smoker',
-        'month_of_absence', 'day_of_the_week', 'seasons', 'reason_for_absence'
-    ]
     
     preprocess_pipeline = create_preprocessing_pipeline(
         columns_to_drop,
-        numerical_columns,
-        categorical_columns
+        NUMERICAL_COLUMNS,
+        CATEGORICAL_COLUMNS
     )
     
     # Create and train model

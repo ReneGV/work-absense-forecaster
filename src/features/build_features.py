@@ -7,6 +7,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.base import BaseEstimator, TransformerMixin
+from src.data.constants import NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -58,10 +59,8 @@ def main(args):
 
     # COLUMNAS
     drop_cols = ['id', 'body_mass_index', 'absenteeism_time_in_hours']  # ← DROP TARGET
-    num_cols  = ['transportation_expense', 'distance_from_residence_to_work', 'service_time', 'age',
-                 'work_load_average_day', 'hit_target', 'son', 'pet', 'weight', 'height']
-    cat_cols  = ['reason_for_absence', 'month_of_absence', 'day_of_the_week', 'seasons',
-                 'disciplinary_failure', 'education', 'social_drinker', 'social_smoker']
+    num_cols  = NUMERICAL_COLUMNS
+    cat_cols  = CATEGORICAL_COLUMNS
 
     # PIPELINE SIN REMAINDER
     pipeline = Pipeline([
