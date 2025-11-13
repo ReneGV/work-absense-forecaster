@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: work-absenteeism-test:latest
+    container_name: absenteeism-tests
+    volumes:
+      # Mount source and tests for live development
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./pytest.ini:/app/pytest.ini:ro
+    command: pytest tests/ -v --tb=short
+    
+  test-coverage:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    image: work-absenteeism-test:latest
+    container_name: absenteeism-tests-coverage
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./pytest.ini:/app/pytest.ini:ro
+      - ./htmlcov:/app/htmlcov
+    command: pytest tests/ -v --cov=src --cov-report=html --cov-report=term

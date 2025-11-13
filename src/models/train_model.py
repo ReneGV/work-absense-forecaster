@@ -63,7 +63,7 @@ preprocess_pipeline = Pipeline([
             ]), numerical_columns),
             ('categorical', Pipeline([
                 ('to_string', ToStringTransformer()),
-                ('one_hot', OneHotEncoder(sparse_output=False, handle_unknown='ignore'))
+                ('one_hot', OneHotEncoder(sparse=False, handle_unknown='ignore'))
             ]), categorical_columns)
         ],
         remainder='passthrough'

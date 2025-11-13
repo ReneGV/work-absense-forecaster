@@ -1,0 +1,71 @@
+# Docker ignore file for test container
+# Only include what's needed for testing
+
+# Exclude everything first
+*
+
+# Then include only what we need
+!src/
+!tests/
+!requirements.txt
+!pytest.ini
+
+# Exclude Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/*.so
+**/*.egg
+**/*.egg-info/
+**/.pytest_cache/
+
+# Exclude data files (not needed for tests)
+data/
+mlruns/
+mlartifacts/
+models/
+
+# Exclude documentation
+docs/
+*.md
+!tests/*.md
+
+# Exclude notebooks
+notebooks/
+*.ipynb
+
+# Exclude git and IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Exclude reports and outputs
+reports/
+htmlcov/
+.coverage
+*.log
+
+# Exclude Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore*
+
+# Exclude CI/CD
+.github/
+
+# Exclude development files
+*.pkl
+confusion_matrix.png
+venv/
+env/
+.env
+*.sh
+
+# Exclude references
+references/
+

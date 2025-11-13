@@ -74,7 +74,7 @@ def main(args):
             ]), num_cols),
             ('cat', Pipeline([
                 ('imputer', SimpleImputer(strategy='constant', fill_value=-1)),
-                ('ohe', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+                ('ohe', OneHotEncoder(handle_unknown='ignore', sparse=False))
             ]), cat_cols)
         ], remainder='drop'))  # ← NADA PASA
     ])

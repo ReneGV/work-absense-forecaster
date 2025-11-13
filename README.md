@@ -69,3 +69,69 @@ Project Organization
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+# Testing Guide for Work Absenteeism Forecaster
+
+## 📋 What Has Been Created
+
+A comprehensive test suite for the `src/models` module has been created with the following structure:
+
+```
+tests/
+├── __init__.py                    # Package initialization
+├── conftest.py                    # Shared pytest fixtures
+├── test_preprocessors.py          # Tests for custom transformers (30+ tests)
+├── test_train_model.py           # Tests for training pipeline (15+ tests)
+├── test_predict_model.py         # Tests for prediction pipeline (15+ tests)
+├── test_parameter_tuning.py      # Tests for hyperparameter tuning (10+ tests)
+├── README.md                      # Test documentation
+└── TEST_SUMMARY.md               # Detailed test summary
+
+Additional files:
+├── pytest.ini                     # Pytest configuration
+├── run_tests.sh                   # Convenience script for running tests
+└── .github/workflows/tests.yml    # CI/CD workflow for automated testing
+```
+
+## Test Coverage
+
+The test suite covers:
+
+1. **Preprocessors (`test_preprocessors.py`)**
+   - `DropColumnsTransformer`: Column dropping functionality
+   - `IQRClippingTransformer`: Outlier handling using IQR method
+   - `ToStringTransformer`: Type conversion to strings
+   - Integration with sklearn pipelines
+
+2. **Model Training (`test_train_model.py`)**
+   - Pipeline construction
+   - Model creation (Logistic Regression, Random Forest, Neural Network)
+   - Data preparation and preprocessing
+   - Training process and metrics calculation
+
+3. **Model Prediction (`test_predict_model.py`)**
+   - Model loading and saving
+   - Making predictions on new data
+   - Prediction evaluation with ground truth
+   - Data handling in prediction pipeline
+
+4. **Parameter Tuning (`test_parameter_tuning.py`)**
+   - Parameter grid setup
+   - GridSearchCV functionality
+   - Best model selection
+   - Metrics tracking during tuning
+
+---
+
+## 🚀 Quick Start
+
+Build the docker image that conatins the required environment to run the tests.
+
+```sh
+docker build -f Dockerfile.test -t work-absenteeism-test:latest .
+```
+
+Run tests inside the docker container
+```sh
+docker-compose -f docker-compose.test.yml run --rm test
+```

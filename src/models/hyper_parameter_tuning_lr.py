@@ -73,7 +73,7 @@ def build_preprocess(scaler="standard", iqr_factor=1.5):
             ]), num_cols),
             ("cat", Pipeline([
                 ("str", ToStringTransformer()),
-                ("ohe", OneHotEncoder(sparse_output=False, handle_unknown="ignore"))
+                ("ohe", OneHotEncoder(sparse=False, handle_unknown="ignore"))
             ]), cat_cols),
         ], remainder="passthrough"))
     ])
