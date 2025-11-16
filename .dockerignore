@@ -1,0 +1,89 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+notebooks/
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+.tox/
+htmlcov/
+tests/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+docs/
+*.md
+*.rst
+LICENSE
+
+# Data files
+data/
+*.csv
+*.dvc
+
+# MLflow artifacts
+mlruns/
+mlartifacts/
+
+# Reports and figures
+reports/
+references/
+confusion_matrix.png
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+
+# Environment files
+.env
+.env.*
+
+# Misc
+*.log
+Makefile
+setup.py
+test_environment.py
+pytest.ini
+tox.ini
+
