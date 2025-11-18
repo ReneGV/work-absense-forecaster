@@ -7,6 +7,7 @@ A work absense hours ML project
 
 ## 📑 Table of Contents
 
+- [Project Overview](#project-overview)
 - [Setup](#setup)
 - [🚀 API Server](#-api-server)
   - [Running with Docker](#running-with-docker-recommended)
@@ -22,6 +23,13 @@ A work absense hours ML project
 - [MLflow Integration](#mlflow-integration)
 
 ---
+
+## Project Overview
+```
+This project builds a machine learning system to forecast employee absenteeism hours using structured HR and productivity data.
+The goal is to identify patterns in employee behavior and workplace conditions to anticipate absenteeism risk, enabling better planning and cost reduction.
+
+```
 
 ## Setup
 
